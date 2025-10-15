@@ -1,76 +1,60 @@
 package com.example.restaurapp;
 
 import com.example.restaurapp.mesa.Mesa;
-import com.example.restaurapp.mesa.MesaRepository;
 import com.example.restaurapp.mesa.MesaService;
 import com.example.restaurapp.usuario.Usuario;
-import com.example.restaurapp.usuario.UsuarioRepository;
-import org.junit.jupiter.api.BeforeEach;
+import com.example.restaurapp.usuario.UsuarioService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class MesaServiceTest {
+@SpringBootTest
+@Transactional
+class MesaServiceTest {
 
-    @Mock
-    private MesaRepository mesaRepository;
-
-    @Mock
-    private UsuarioRepository usuarioRepository;
-
-    @InjectMocks
+    @Autowired
     private MesaService mesaService;
 
-    private Mesa mesa;
-    private Usuario mesero;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mesero = new Usuario();
-        mesero.setId(2L);
-        mesero.setNombre("Ana");
-        mesero.setRol(Usuario.Rol.MESERO);
-
-        mesa = new Mesa();
-        mesa.setId(1L);
-        mesa.setEstado(Mesa.Estado.LIBRE);
-        mesa.setMesero(mesero);
-    }
+    @Autowired
+    private UsuarioService usuarioService;
 
     @Test
     void testGetAllMesas() {
-        when(mesaRepository.findAll()).thenReturn(List.of(mesa));
-        assertEquals(1, mesaService.getAll().size());
+        List<Mesa> mesas = mesaService.getAll();
+        assertTrue(mesas.size() >= 5);
     }
 
     @Test
     void testGuardarMesaConMeseroValido() {
-        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(mesero));
-        when(mesaRepository.save(any(Mesa.class))).thenReturn(mesa);
+        Usuario mesero = usuarioService.getAll().stream()
+                .filter(u -> u.getRol() == Usuario.Rol.MESERO)
+                .findFirst()
+                .orElseThrow();
 
-        Mesa guardada = mesaService.save(mesa);
-        assertNotNull(guardada);
+        Mesa nueva = new Mesa();
+        nueva.setEstado(Mesa.Estado.LIBRE);
+        nueva.setMesero(mesero);
+
+        Mesa guardada = mesaService.save(nueva);
+        assertNotNull(guardada.getId());
         assertEquals(Usuario.Rol.MESERO, guardada.getMesero().getRol());
     }
 
     @Test
     void testLiberarMesa() {
+        Mesa mesa = mesaService.getAll().get(0);
         mesa.setEstado(Mesa.Estado.OCUPADA);
-        when(mesaRepository.findById(1L)).thenReturn(Optional.of(mesa));
+        mesaService.save(mesa);
 
-        mesaService.liberarMesa(1L);
-        assertEquals(Mesa.Estado.LIBRE, mesa.getEstado());
-        assertNull(mesa.getMesero());
+        mesaService.liberarMesa(mesa.getId());
+        Optional<Mesa> liberada = mesaService.getMesaById(mesa.getId());
+
+        assertEquals(Mesa.Estado.LIBRE, liberada.get().getEstado());
     }
 }

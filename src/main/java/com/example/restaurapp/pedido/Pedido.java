@@ -13,7 +13,7 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @ManyToOne
-    @JoinColumn(name = "mesero_id")
+    @JoinColumn(name = "mesa_id")
     private Mesa mesa;
     private LocalDateTime fechaHora;
     public enum estado {REGISTRADO,EN_PREPARACION,COMPLETADO,CANCELADO};
