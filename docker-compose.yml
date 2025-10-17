@@ -21,6 +21,7 @@ services:
     restart: always
     environment:
       PMA_HOST: mysql
+      PMA_PORT: 3306
       PMA_USER: jeff
       PMA_PASSWORD: jeff123
     ports:
