@@ -38,7 +38,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         String correo = request.get("correo");
-        String contrasena = request.get("contrasena");
+        String contrasena = request.get("password");
 
         try {
             System.out.println("🔹 Intentando autenticar usuario: " + correo);
@@ -55,6 +55,8 @@ public class AuthController {
             }
 
             if (!coincide) {
+                System.out.println(contrasena);
+                System.out.println(usuario.getPassword());
                 System.out.println("Contraseña incorrecta para: " + correo);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "Credenciales inválidas"));

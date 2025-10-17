@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: restaurante
+      MYSQL_USER: jeff
+      MYSQL_PASSWORD: jeff123
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin_container
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: jeff
+      PMA_PASSWORD: jeff123
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+
+  backend:
+    build: .
+    container_name: restaurapp_container
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/restaurante
+      SPRING_DATASOURCE_USERNAME: jeff
+      SPRING_DATASOURCE_PASSWORD: jeff123

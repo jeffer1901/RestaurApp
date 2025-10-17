@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/pedidos/estado/**").hasRole("COCINERO")
 
                         // 🔒 ADMIN
-                        .requestMatchers("/productos/**").hasRole("ADMIN")
+                        .requestMatchers("/productos/**", "/mesas/**", "/pedidos/**", "/usuarios/**").hasRole("ADMIN")
 
                         // Cualquier otra autenticada
                         .anyRequest().authenticated()
