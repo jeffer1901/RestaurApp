@@ -34,7 +34,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 🔓 PÚBLICO primero
                         .requestMatchers("/auth/**", "/usuarios/registro").permitAll()
-
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         // 🔒 MESERO
                         .requestMatchers("/mesas/liberar/**").hasRole("MESERO")
                         .requestMatchers("/pedidos/**").hasRole("MESERO")
