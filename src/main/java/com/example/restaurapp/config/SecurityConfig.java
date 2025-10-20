@@ -32,34 +32,25 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ Rutas públicas (Swagger + Auth)
+                        // 🔓 Permitir Swagger y autenticación
                         .requestMatchers(
                                 "/auth/**",
-                                "/usuarios/registro",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/usuarios/registro"
                         ).permitAll()
 
-                        // 🔒 MESERO
+                        // 🔒 Roles
                         .requestMatchers("/mesas/liberar/**").hasRole("MESERO")
                         .requestMatchers("/pedidos/**").hasRole("MESERO")
-
-                        // 🔒 COCINERO
                         .requestMatchers("/pedidos/estado/**").hasRole("COCINERO")
-
-                        // 🔒 ADMIN
-                        .requestMatchers("/productos/**", "/mesas/**", "/pedidos/**", "/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/productos/**", "/mesas/**", "/usuarios/**","/pedidos/**").hasRole("ADMIN")
 
                         // Cualquier otra autenticada
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(AbstractHttpConfigurer::disable)
-                .logout(AbstractHttpConfigurer::disable);
-
-        // ⚠️ Agregar el filtro JWT después de definir las rutas públicas
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .logout(AbstractHttpConfigurer::disable)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

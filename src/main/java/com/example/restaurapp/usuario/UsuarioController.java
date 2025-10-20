@@ -21,7 +21,7 @@ public class UsuarioController {
     @GetMapping()
     public List<Usuario> getAll(){return usuarioService.getAll();}
 
-    @PostMapping()
+    @PostMapping("/registro")
     public Usuario save(@RequestBody Usuario usuario) {return usuarioService.save(usuario);}
     @PutMapping("/{id}")
     public Usuario update(@PathVariable Long id, @RequestBody Usuario usuario) {
