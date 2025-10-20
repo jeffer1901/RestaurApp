@@ -32,13 +32,15 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 PÚBLICO primero
-                        .requestMatchers("/auth/**", "/usuarios/registro").permitAll()
+                        // ✅ Rutas públicas (Swagger + Auth)
                         .requestMatchers(
+                                "/auth/**",
+                                "/usuarios/registro",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+
                         // 🔒 MESERO
                         .requestMatchers("/mesas/liberar/**").hasRole("MESERO")
                         .requestMatchers("/pedidos/**").hasRole("MESERO")
@@ -54,8 +56,10 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(AbstractHttpConfigurer::disable)
-                .logout(AbstractHttpConfigurer::disable)
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .logout(AbstractHttpConfigurer::disable);
+
+        // ⚠️ Agregar el filtro JWT después de definir las rutas públicas
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
