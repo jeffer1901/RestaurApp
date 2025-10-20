@@ -30,15 +30,22 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        System.out.println("Ruta interceptada: " + request.getServletPath());
-        System.out.println("Authorization header: " + request.getHeader("Authorization"));
-        String path = request.getServletPath();
 
-        if (path.startsWith("/auth") || path.startsWith("/usuarios/registro")) {
+        String path = request.getServletPath();
+        System.out.println("Ruta interceptada: " + path);
+        System.out.println("Authorization header: " + request.getHeader("Authorization"));
+
+        // 🔓 Permitir acceso libre a rutas públicas
+        if (path.startsWith("/auth")
+                || path.startsWith("/usuarios/registro")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-ui")
+                || path.equals("/swagger-ui.html")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // 🔐 Validar JWT para el resto
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
@@ -48,7 +55,11 @@ public class JwtFilter extends OncePerRequestFilter {
                 UserDetails userDetails = usuarioDetailsService.loadUserByUsername(correo);
 
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
 
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
