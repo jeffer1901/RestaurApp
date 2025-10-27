@@ -14,7 +14,7 @@ public class MesaController {
     @GetMapping("/{id}")
     public Optional<Mesa> getMesa(@PathVariable Long id) {return mesaService.getMesaById(id);}
 
-    @GetMapping()
+    @GetMapping("/get")
     public List<Mesa> getMesas() {return mesaService.getAll();}
 
     @PostMapping

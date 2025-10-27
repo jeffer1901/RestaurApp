@@ -13,7 +13,7 @@ public class ProductoController {
     private ProductoService productoService;
     public ProductoController(ProductoService productoService) {this.productoService = productoService;}
 
-    @GetMapping
+    @GetMapping("/get")
     public List<Producto> getAll() {
         return productoService.getAll();
     }

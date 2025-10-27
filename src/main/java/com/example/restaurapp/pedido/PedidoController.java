@@ -16,7 +16,7 @@ public class PedidoController {
         this.pedidoService = pedidoService;
     }
 
-    @GetMapping
+    @GetMapping("/get")
     public List<Pedido> getAllPedidos(){
         return pedidoService.getAllPedidos();
     }

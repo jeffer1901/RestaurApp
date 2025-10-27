@@ -40,8 +40,11 @@ public class SecurityConfig {
 
                         // 🔒 Roles
                         .requestMatchers("/mesas/liberar/**").hasRole("MESERO")
+                        .requestMatchers("/mesas/get/**").hasRole("MESERO")
                         .requestMatchers("/pedidos/**").hasRole("MESERO")
+                        .requestMatchers("/productos/get/**").hasRole("MESERO")
                         .requestMatchers("/pedidos/estado/**").hasRole("COCINERO")
+                        .requestMatchers("/pedidos/get/**").hasRole("COCINERO")
                         .requestMatchers("/productos/**", "/mesas/**", "/usuarios/**","/pedidos/**").hasRole("ADMIN")
 
                         // Cualquier otra autenticada
