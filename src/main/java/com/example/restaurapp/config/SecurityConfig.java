@@ -37,7 +37,7 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/usuarios/registro"
                         ).permitAll()
-
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs.yaml").permitAll()
                         // 🔒 Roles
                         .requestMatchers("/mesas/liberar/**").hasRole("MESERO")
                         .requestMatchers("/mesas/get/**").hasRole("MESERO")
