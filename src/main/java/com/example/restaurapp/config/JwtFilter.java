@@ -54,8 +54,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // Validar token JWT
         String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
+        if (header != null && header.toLowerCase().startsWith("bearer")) {
+            String token = header.replaceFirst("(?i)bearer", "").trim();
 
             System.out.println("🟡 Token recibido: " + token);
 
