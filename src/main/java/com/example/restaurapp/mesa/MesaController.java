@@ -11,10 +11,10 @@ import java.util.Optional;
 public class MesaController {
     private MesaService mesaService;
     public MesaController(MesaService mesaService) {this.mesaService = mesaService;}
-    @GetMapping("/get/{id}")
+    @GetMapping("/{id}")
     public Optional<Mesa> getMesa(@PathVariable Long id) {return mesaService.getMesaById(id);}
 
-    @GetMapping("/getAll")
+    @GetMapping()
     public List<Mesa> getMesas() {return mesaService.getAll();}
 
     @PostMapping

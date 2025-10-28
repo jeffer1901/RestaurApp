@@ -16,12 +16,12 @@ public class PedidoController {
         this.pedidoService = pedidoService;
     }
 
-    @GetMapping("/get")
+    @GetMapping()
     public List<Pedido> getAllPedidos(){
         return pedidoService.getAllPedidos();
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("{id}")
     public Optional<Pedido> getPedidoById(@PathVariable Long id){return pedidoService.getPedidoById(id);}
 
     @PostMapping

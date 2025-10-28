@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -32,27 +33,31 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 Permitir Swagger y autenticación
+                        // ✅ Endpoints públicos
                         .requestMatchers(
                                 "/auth/**",
                                 "/usuarios/registro",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/swagger-resources/**",
-                                "/webjars/**",
-                                "/swagger-ui/index.html"
+                                "/v3/api-docs.yaml"
                         ).permitAll()
-                        // 🔒 Roles
+
+                        // ✅ MESERO
+                        // Solo puede ver y liberar mesas, ver productos y manejar sus pedidos
+                        .requestMatchers(HttpMethod.GET, "/mesas/**").hasRole("MESERO")
                         .requestMatchers("/mesas/liberar/**").hasRole("MESERO")
-                        .requestMatchers("/mesas/get/**").hasRole("MESERO")
+                        .requestMatchers(HttpMethod.GET, "/productos/**").hasRole("MESERO")
                         .requestMatchers("/pedidos/**").hasRole("MESERO")
-                        .requestMatchers("/productos/get/**").hasRole("MESERO")
+
+                        // ✅ COCINERO
                         .requestMatchers("/pedidos/estado/**").hasRole("COCINERO")
                         .requestMatchers("/pedidos/get/**").hasRole("COCINERO")
-                        .requestMatchers("/productos/**", "/mesas/**", "/usuarios/**","/pedidos/**").hasRole("ADMIN")
 
-                        // Cualquier otra autenticada
+                        // ✅ ADMIN (tiene acceso total)
+                        .requestMatchers("/productos/**", "/mesas/**", "/usuarios/**", "/pedidos/**").hasRole("ADMIN")
+
+                        // 🔒 Cualquier otra ruta autenticada
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -13,11 +13,11 @@ public class ProductoController {
     private ProductoService productoService;
     public ProductoController(ProductoService productoService) {this.productoService = productoService;}
 
-    @GetMapping("/get")
+    @GetMapping()
     public List<Producto> getAll() {
         return productoService.getAll();
     }
-    @GetMapping("/get/{id}")
+    @GetMapping("/{id}")
     public Optional<Producto> getById(@PathVariable Long id) {
         return productoService.getById(id);
     }
