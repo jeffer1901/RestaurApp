@@ -1,6 +1,7 @@
 package com.example.restaurapp.config;
 
 import com.example.restaurapp.usuario.UsuarioDetailsService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,49 +36,59 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-        System.out.println("Ruta interceptada: " + path);
-        System.out.println("Authorization header: " + request.getHeader("Authorization"));
+        String header = request.getHeader("Authorization");
 
-        // 🔓 Permitir acceso libre a rutas públicas
+        // 🔹 Mostrar información útil en consola
+        System.out.println("\n------------------------------------");
+        System.out.println("🔹 Ruta interceptada: " + path);
+        System.out.println("🔹 Header Authorization: " + header);
+        System.out.println("------------------------------------");
+
+        // 🔓 Permitir rutas públicas
         if (path.startsWith("/auth")
                 || path.startsWith("/usuarios/registro")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/swagger-ui")
                 || path.equals("/swagger-ui.html")
                 || path.startsWith("/swagger")
-                || path.equals("/v2/api-docs")
         ) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 🔐 Validar JWT para el resto
-        String header = request.getHeader("Authorization");
-
+        // 🔐 Validar token
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            if (jwtUtil.validateToken(token)) {
-                String correo = jwtUtil.extractUsername(token);
-                UserDetails userDetails = usuarioDetailsService.loadUserByUsername(correo);
+            try {
+                if (jwtUtil.validateToken(token)) {
+                    Claims claims = jwtUtil.extractClaims(token);
+                    String correo = claims.getSubject();
+                    String rol = (String) claims.get("rol");
 
-                // ✅ Extraer el rol directamente del token
-                String rol = jwtUtil.extractClaims(token).get("rol", String.class);
-                if (rol != null) {
-                    String prefixedRole = rol.startsWith("ROLE_") ? rol : "ROLE_" + rol;
+                    System.out.println("✅ Token válido para: " + correo);
+                    System.out.println("🧩 Rol extraído del token: " + rol);
 
-                    UsernamePasswordAuthenticationToken auth =
+                    UserDetails userDetails = usuarioDetailsService.loadUserByUsername(correo);
+
+                    UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
                                     null,
-                                    List.of(new SimpleGrantedAuthority(prefixedRole))
+                                    userDetails.getAuthorities()
                             );
 
-                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                    System.out.println("✅ Usuario autenticado: " + correo + " con rol: " + prefixedRole);
+                    System.out.println("🔐 Autenticado en contexto con roles: " + userDetails.getAuthorities());
+                } else {
+                    System.out.println("❌ Token inválido o expirado.");
                 }
+            } catch (Exception e) {
+                System.out.println("⚠️ Error procesando el token: " + e.getMessage());
             }
+        } else {
+            System.out.println("⚠️ No se encontró header Authorization válido.");
         }
 
         filterChain.doFilter(request, response);
