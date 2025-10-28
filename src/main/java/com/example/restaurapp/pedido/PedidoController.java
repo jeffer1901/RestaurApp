@@ -21,7 +21,7 @@ public class PedidoController {
         return pedidoService.getAllPedidos();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public Optional<Pedido> getPedidoById(@PathVariable Long id){return pedidoService.getPedidoById(id);}
 
     @PostMapping

@@ -35,9 +35,14 @@ public class SecurityConfig {
                         // 🔓 Permitir Swagger y autenticación
                         .requestMatchers(
                                 "/auth/**",
-                                "/usuarios/registro"
+                                "/usuarios/registro",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                "/swagger-ui/index.html"
                         ).permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs.yaml").permitAll()
                         // 🔒 Roles
                         .requestMatchers("/mesas/liberar/**").hasRole("MESERO")
                         .requestMatchers("/mesas/get/**").hasRole("MESERO")
