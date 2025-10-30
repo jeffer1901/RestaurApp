@@ -45,14 +45,13 @@ public class SecurityConfig {
 
                         // ✅ MESERO
                         // Solo puede ver y liberar mesas, ver productos y manejar sus pedidos
-                        .requestMatchers(HttpMethod.GET, "/mesas/**").hasRole("MESERO")
-                        .requestMatchers("/mesas/liberar/**").hasRole("MESERO")
-                        .requestMatchers(HttpMethod.GET, "/productos/**").hasRole("MESERO")
-                        .requestMatchers("/pedidos/**").hasRole("MESERO")
+                        .requestMatchers(HttpMethod.GET, "/mesas/**").hasAnyRole("MESERO","ADMIN")
+                        .requestMatchers("/mesas/liberar/**").hasAnyRole("MESERO","ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/productos/**").hasAnyRole("MESERO","ADMIN")
+                        .requestMatchers("/pedidos/**").hasAnyRole("MESERO","ADMIN","COCINERO")
 
                         // ✅ COCINERO
-                        .requestMatchers("/pedidos/estado/**").hasRole("COCINERO")
-                        .requestMatchers("/pedidos/get/**").hasRole("COCINERO")
+                        .requestMatchers("/pedidos/estado/**").hasAnyRole("COCINERO","ADMIN")
 
                         // ✅ ADMIN (tiene acceso total)
                         .requestMatchers("/productos/**", "/mesas/**", "/usuarios/**", "/pedidos/**").hasRole("ADMIN")
