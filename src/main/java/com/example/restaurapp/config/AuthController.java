@@ -68,7 +68,8 @@ public class AuthController {
 
             return ResponseEntity.ok(Map.of(
                     "token", token,
-                    "rol", usuario.getRol().name()
+                    "rol", usuario.getRol().name(),
+                    "id",usuario.getId()
             ));
 
         } catch (Exception e) {

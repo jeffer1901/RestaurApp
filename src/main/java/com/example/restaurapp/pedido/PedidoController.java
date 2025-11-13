@@ -39,10 +39,12 @@ public class PedidoController {
     public void deletePedido(@PathVariable Long id){
         pedidoService.deletePedido(id);
     }
-    @PutMapping("/{id}/estado")
+
+    @PatchMapping("/{id}/estado")
     public ResponseEntity<String> cambiarEstado(@PathVariable Long id, @RequestParam String nuevoEstado) {
         pedidoService.cambiarEstado(id, nuevoEstado);
         return ResponseEntity.ok("Estado del pedido actualizado");
     }
+
 
 }

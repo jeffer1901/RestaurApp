@@ -2,6 +2,7 @@ package com.example.restaurapp.mesa;
 
 import com.example.restaurapp.pedido.Pedido;
 import com.example.restaurapp.usuario.Usuario;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class Mesa {
     @JoinColumn(name = "mesero_id")
     private Usuario mesero;
     @OneToMany(mappedBy = "mesa")
+    @JsonIgnore
     private List<Pedido> pedidos;
 
     public  Mesa(int capacidad,long id,Estado estado,Usuario mesero,List<Pedido> pedidos) {

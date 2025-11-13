@@ -1,6 +1,7 @@
 package com.example.restaurapp.pedido;
 
 import com.example.restaurapp.productos.Producto;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,6 +15,7 @@ public class DetallePedido {
     private double precioTotal;
     @ManyToOne
     @JoinColumn(name = "pedido_id")
+    @JsonBackReference
     private Pedido pedido;
     @ManyToOne
     @JoinColumn(name = "producto_id")

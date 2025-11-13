@@ -5,6 +5,7 @@ import com.example.restaurapp.mesa.MesaRepository;
 import com.example.restaurapp.productos.ProductoRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,36 +29,31 @@ public class PedidoService {
         return pedidoRepository.findById(id);
     }
     public Pedido createPedido(Pedido pedido) {
-
-        // Buscar la mesa asociada
         Mesa mesa = mesaRepository.findById(pedido.getMesa().getId())
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
-
-        // Validar que la mesa esté libre
-        if (mesa.getEstado() != Mesa.Estado.LIBRE) {
-            throw new RuntimeException("La mesa ya está ocupada o reservada");
-        }
 
         // Validar que venga un mesero
         if (pedido.getMesa().getMesero() == null || pedido.getMesa().getMesero().getId() == 0) {
             throw new RuntimeException("Debe indicar el mesero que atenderá la mesa");
         }
 
-        // 🔹 Asignar el mesero a la mesa
+        // 🔹 Asignar siempre el mesero a la mesa
         mesa.setMesero(pedido.getMesa().getMesero());
 
-        // 🔹 Cambiar el estado de la mesa a OCUPADA
-        mesa.setEstado(Mesa.Estado.OCUPADA);
+        // 🔹 Cambiar estado de mesa solo si está libre
+        if (mesa.getEstado() == Mesa.Estado.LIBRE) {
+            mesa.setEstado(Mesa.Estado.OCUPADA);
+        }
+
         mesaRepository.save(mesa);
 
-        // Configurar datos del pedido
+        // Configurar pedido
         pedido.setMesa(mesa);
-        pedido.setFechaHora(java.time.LocalDateTime.now());
+        pedido.setFechaHora(LocalDateTime.now());
         pedido.setEstado(Pedido.estado.REGISTRADO);
 
         double total = 0;
 
-        // Calcular los detalles del pedido y total
         for (var detalle : pedido.getDetallePedidos()) {
             var producto = productoRepository.findById(detalle.getProducto().getId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + detalle.getProducto().getId()));
@@ -72,7 +68,6 @@ public class PedidoService {
 
         pedido.setTotal(total);
 
-        // Guardar el pedido completo
         return pedidoRepository.save(pedido);
     }
 

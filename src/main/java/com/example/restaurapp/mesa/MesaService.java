@@ -9,15 +9,28 @@ import java.util.Optional;
 
 @Service
 public class MesaService {
-    private MesaRepository mesaRepository;
-    private UsuarioRepository usuarioRepository;
-    public MesaService(MesaRepository mesaRepository,UsuarioRepository usuarioRepository) {this.mesaRepository = mesaRepository;
-    this.usuarioRepository = usuarioRepository;}
 
-    public List<Mesa> getAll() {return mesaRepository.findAll();}
-    public Optional<Mesa> getMesaById(Long id) {return mesaRepository.findById(id);}
+    private final MesaRepository mesaRepository;
+    private final UsuarioRepository usuarioRepository;
+
+    public MesaService(MesaRepository mesaRepository, UsuarioRepository usuarioRepository) {
+        this.mesaRepository = mesaRepository;
+        this.usuarioRepository = usuarioRepository;
+    }
+
+    // 🔹 Obtener todas las mesas
+    public List<Mesa> getAll() {
+        return mesaRepository.findAll();
+    }
+
+    // 🔹 Obtener una mesa por ID
+    public Optional<Mesa> getMesaById(Long id) {
+        return mesaRepository.findById(id);
+    }
+
+    // 🔹 Crear una nueva mesa o actualizar una existente
     public Mesa save(Mesa mesa) {
-        if (mesa.getMesero() != null) {
+        if (mesa.getMesero() != null && mesa.getMesero().getId() != 0) {
             Usuario mesero = usuarioRepository.findById(mesa.getMesero().getId())
                     .orElseThrow(() -> new RuntimeException("Mesero no encontrado"));
 
@@ -26,12 +39,19 @@ public class MesaService {
             }
 
             mesa.setMesero(mesero);
+        } else {
+            mesa.setMesero(null); // ✅ Permite guardar sin mesero
         }
+
         return mesaRepository.save(mesa);
     }
+
+    // 🔹 Eliminar mesa por ID
     public void delete(Long id) {
         mesaRepository.deleteById(id);
     }
+
+    // 🔹 Actualizar mesa existente
     public Mesa actualizarMesa(Long id, Mesa mesaActualizada) {
         Optional<Mesa> mesaOptional = mesaRepository.findById(id);
 
@@ -40,11 +60,21 @@ public class MesaService {
         }
 
         Mesa mesaExistente = mesaOptional.get();
+        mesaExistente.setCapacidad(mesaActualizada.getCapacidad());
         mesaExistente.setEstado(mesaActualizada.getEstado());
-        mesaExistente.setMesero(mesaActualizada.getMesero());
+
+        if (mesaActualizada.getMesero() != null && mesaActualizada.getMesero().getId() != 0) {
+            Usuario mesero = usuarioRepository.findById(mesaActualizada.getMesero().getId())
+                    .orElseThrow(() -> new RuntimeException("Mesero no encontrado"));
+            mesaExistente.setMesero(mesero);
+        } else {
+            mesaExistente.setMesero(null); // ✅ Se puede actualizar a "sin mesero"
+        }
 
         return mesaRepository.save(mesaExistente);
     }
+
+    // 🔹 Liberar mesa (cambiar estado a LIBRE y quitar mesero)
     public void liberarMesa(Long idMesa) {
         Mesa mesa = mesaRepository.findById(idMesa)
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada con ID: " + idMesa));
@@ -54,9 +84,7 @@ public class MesaService {
         }
 
         mesa.setEstado(Mesa.Estado.LIBRE);
-        mesa.setMesero(null); // 🔹 se desasigna el mesero
-
+        mesa.setMesero(null);
         mesaRepository.save(mesa);
     }
-
 }
