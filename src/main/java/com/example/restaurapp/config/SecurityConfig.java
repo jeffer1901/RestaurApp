@@ -1,22 +1,17 @@
 package com.example.restaurapp.config;
 
-
+import com.example.restaurapp.config.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -27,6 +22,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
     private final JwtFilter jwtFilter;
 
     public SecurityConfig(JwtFilter jwtFilter) {
@@ -36,14 +32,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // ✅ Habilita CORS
+                // Habilitar CORS
                 .cors().and()
 
-                // ❌ Desactiva CSRF (no se usa en APIs REST)
-                .csrf(AbstractHttpConfigurer::disable)
+                // Desactivar CSRF (para API REST)
+                .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ Endpoints públicos
+                        // Endpoints públicos
                         .requestMatchers(
                                 "/auth/**",
                                 "/usuarios/registro",
@@ -53,42 +49,49 @@ public class SecurityConfig {
                                 "/v3/api-docs.yaml"
                         ).permitAll()
 
-                        // ✅ MESERO
+                        // MESERO
                         .requestMatchers(HttpMethod.GET, "/mesas/**").hasAnyRole("MESERO","ADMIN")
                         .requestMatchers("/mesas/liberar/**").hasAnyRole("MESERO","ADMIN")
                         .requestMatchers(HttpMethod.GET, "/productos/**").hasAnyRole("MESERO","ADMIN")
                         .requestMatchers("/pedidos/**").hasAnyRole("MESERO","ADMIN","COCINERO")
 
-                        // ✅ COCINERO
+                        // COCINERO
                         .requestMatchers("/pedidos/estado/**").hasAnyRole("COCINERO","ADMIN")
 
-                        // ✅ ADMIN (tiene acceso total)
+                        // ADMIN
                         .requestMatchers("/productos/**", "/mesas/**", "/pedidos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/usuarios/**").hasAnyRole("ADMIN", "MESERO", "COCINERO")
 
-                        // 🔒 Cualquier otra ruta autenticada
+                        // Cualquier otra ruta requiere autenticación
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .formLogin(AbstractHttpConfigurer::disable)
-                .logout(AbstractHttpConfigurer::disable)
+
+                // API Stateless
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .formLogin(form -> form.disable())
+                .logout(logout -> logout.disable())
+
+                // Registrar filtro JWT
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ✅ Configuración de CORS permitiendo Angular
+    // CORS Config final
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+
         config.setAllowedOrigins(List.of(
                 "http://localhost:4200",
                 "http://4.155.250.187",
-                "http://4.155.250.187/" // por si Angular hace redirect
-        )); // tu frontend
+                "http://4.155.250.187:80"
+        ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // si usas cookies o tokens
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
