@@ -81,7 +81,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200")); // tu frontend
+        config.setAllowedOrigins(List.of(
+                "http://localhost:4200",
+                "http://4.155.250.187",
+                "http://4.155.250.187/" // por si Angular hace redirect
+        )); // tu frontend
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // si usas cookies o tokens
